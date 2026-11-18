@@ -1,0 +1,29 @@
+name: cloudflared
+
+services:
+  connector:
+    image: ${CLOUDFLARED_IMAGE}
+    restart: unless-stopped
+    command:
+      - tunnel
+      - --no-autoupdate
+      - --config
+      - /etc/cloudflared/config.yml
+      - run
+    user: "65532:65532"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    volumes:
+      - ${CLOUDFLARED_CONFIG_FILE}:/etc/cloudflared/config.yml:ro
+      - ${CLOUDFLARED_CREDENTIALS_FILE}:/etc/cloudflared/tunnel.json:ro
+    networks:
+      - cloudflare-edge
+
+networks:
+  cloudflare-edge:
+    external: true
